@@ -98,10 +98,11 @@ class TransformerModel(nn.Module):
         
     def forward(self, x, targets=None):
         B, T = x.shape  # Batch size and sequence length
-        T = min(T, self.block_size)  # Ensure sequence length doesn't exceed block_size
-        pos = torch.arange(0, T, dtype=torch.long, device=x.device).unsqueeze(0)  # Positional indices
-        
-        tok_emb = self.embed(x)  # Token embeddings
+        T = min(T, self.block_size)
+        x = x[:, :T]
+        pos = torch.arange(0, T, dtype=torch.long, device=x.device).unsqueeze(0)
+
+        tok_emb = self.embed(x)
         pos_emb = self.pos_embed(pos)  # Positional embeddings
         x = tok_emb + pos_emb  # Combine token and positional embeddings
         
