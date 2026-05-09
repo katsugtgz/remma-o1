@@ -85,6 +85,13 @@ class TransformerModel(nn.Module):
         self.norm = nn.LayerNorm(embed_size)  # Final layer normalization
         self.head = nn.Linear(embed_size, vocab_size)  # Linear layer for output logits
         self.block_size = block_size  # Maximum sequence length
+        
+        # Causal mask to ensure autoregressive property (tokens don't attend to future tokens)
+        self.register_buffer(
+            "causal_mask", 
+            torch.tril(torch.ones(block_size, block_size)).view(1, 1, block_size, block_size)
+        )
+        
         self.apply(self._init_weights)  # Initialize weights
 
     # Initialize weights for Linear and Embedding layers
@@ -106,8 +113,11 @@ class TransformerModel(nn.Module):
         pos_emb = self.pos_embed(pos)  # Positional embeddings
         x = tok_emb + pos_emb  # Combine token and positional embeddings
         
+        # Apply causal mask
+        mask = self.causal_mask[:, :, :T, :T]
+        
         for layer in self.layers:
-            x = layer(x)  # Pass through each transformer block
+            x = layer(x, mask=mask)  # Pass through each transformer block with mask
             
         x = self.norm(x)  # Apply final layer normalization
         logits = self.head(x)  # Compute output logits
