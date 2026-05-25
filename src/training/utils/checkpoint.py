@@ -2,7 +2,7 @@ import torch
 import os
 from datetime import datetime
 
-def save_checkpoint(model, optimizer, step, config):
+def save_checkpoint(model, optimizer, step, config, path=None):
     checkpoint_dir = f"models/checkpoints/{config['model']['name']}"
     os.makedirs(checkpoint_dir, exist_ok=True)
     
